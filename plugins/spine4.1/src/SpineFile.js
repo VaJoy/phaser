@@ -50,13 +50,15 @@ var SpineFile = new Class({
 
     initialize:
 
-    function SpineFile (loader, key, jsonURL, atlasURL, preMultipliedAlpha, jsonXhrSettings, atlasXhrSettings)
+    function SpineFile (loader, key, jsonURL, atlasURL, imageURI, preMultipliedAlpha, jsonXhrSettings, atlasXhrSettings)
     {
         var i;
         var json;
         var atlas;
         var files = [];
         var cache = loader.cacheManager.custom.spine;
+
+        this.imageURI = imageURI;
 
         //  atlas can be an array of atlas files, not just a single one
 
@@ -172,13 +174,26 @@ var SpineFile = new Class({
                 loader.setPath(path);
                 loader.setPrefix(prefix);
 
+                var imageURIArr = [];
+                if (typeof this.imageURI === 'string')
+                {
+                    imageURIArr.push(this.imageURI);
+                }
+                else if (this.imageURI && this.imageURI.length)
+                {
+                    imageURIArr = this.imageURI;
+                }
+
+
                 for (var i = 0; i < textures.length; i++)
                 {
                     var textureURL = textures[i];
 
                     var key = textureURL;
 
-                    var image = new ImageFile(loader, key, textureURL, textureXhrSettings);
+                    var imageURI = imageURIArr[i];
+                    var image = new ImageFile(loader, key, imageURI || textureURL, textureXhrSettings);
+
 
                     if (!loader.keyExists(image))
                     {

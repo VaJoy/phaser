@@ -311,21 +311,15 @@ var File = new Class({
      * @since 3.0.0
      *
      * @param {XMLHttpRequest} xhr - The XMLHttpRequest that caused this onload event.
-     * @param {ProgressEvent} event - The DOM ProgressEvent that resulted from this load.
      */
-    onLoad: function (xhr, event)
+    onLoad: function (xhr)
     {
-        var isLocalFile = xhr.responseURL && this.loader.localSchemes.some(function (scheme)
-        {
-            return xhr.responseURL.indexOf(scheme) === 0;
-        });
-
-        var localFileOk = (isLocalFile && event.target.status === 0);
-
-        var success = !(event.target && event.target.status !== 200) || localFileOk;
+        // iOS 离线包会返回 status=0
+        var xhrStatus = xhr.status === 0 ? 200 : xhr.status;
+        var success = xhrStatus === 200;
 
         //  Handle HTTP status codes of 4xx and 5xx as errors, even if xhr.onerror was not called.
-        if (xhr.readyState === 4 && xhr.status >= 400 && xhr.status <= 599)
+        if (xhr.readyState === 4 && xhrStatus >= 400 && xhrStatus <= 599)
         {
             success = false;
         }
