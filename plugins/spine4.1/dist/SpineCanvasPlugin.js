@@ -1,7 +1,7 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 4399:
+/***/ 1964:
 /***/ ((module) => {
 
 "use strict";
@@ -345,7 +345,7 @@ if (true) {
 
 /***/ }),
 
-/***/ 5159:
+/***/ 6108:
 /***/ ((module) => {
 
 /*** IMPORTS FROM imports-loader ***/
@@ -9951,13 +9951,15 @@ var SpineFile = new Class({
 
     initialize:
 
-    function SpineFile (loader, key, jsonURL, atlasURL, preMultipliedAlpha, jsonXhrSettings, atlasXhrSettings)
+    function SpineFile (loader, key, jsonURL, atlasURL, imageURI, preMultipliedAlpha, jsonXhrSettings, atlasXhrSettings)
     {
         var i;
         var json;
         var atlas;
         var files = [];
         var cache = loader.cacheManager.custom.spine;
+
+        this.imageURI = imageURI;
 
         //  atlas can be an array of atlas files, not just a single one
 
@@ -10073,13 +10075,26 @@ var SpineFile = new Class({
                 loader.setPath(path);
                 loader.setPrefix(prefix);
 
+                var imageURIArr = [];
+                if (typeof this.imageURI === 'string')
+                {
+                    imageURIArr.push(this.imageURI);
+                }
+                else if (this.imageURI && this.imageURI.length)
+                {
+                    imageURIArr = this.imageURI;
+                }
+
+
                 for (var i = 0; i < textures.length; i++)
                 {
                     var textureURL = textures[i];
 
                     var key = textureURL;
 
-                    var image = new ImageFile(loader, key, textureURL, textureXhrSettings);
+                    var imageURI = imageURIArr[i];
+                    var image = new ImageFile(loader, key, imageURI || textureURL, textureXhrSettings);
+
 
                     if (!loader.keyExists(image))
                     {
@@ -10171,8 +10186,8 @@ var Class = __webpack_require__(7473);
 var GetValue = __webpack_require__(5851);
 var ResizeEvent = __webpack_require__(3527);
 var ScenePlugin = __webpack_require__(5722);
-var SpineCanvas = __webpack_require__(5159);
-var SpineWebgl = __webpack_require__(5159);
+var SpineCanvas = __webpack_require__(6108);
+var SpineWebgl = __webpack_require__(6108);
 var Spine = {
     canvas: SpineCanvas,
     webgl: SpineWebgl
@@ -19760,7 +19775,7 @@ module.exports = BuildGameObject;
 var Class = __webpack_require__(7473);
 var ComponentsToJSON = __webpack_require__(6125);
 var DataManager = __webpack_require__(1081);
-var EventEmitter = __webpack_require__(4399);
+var EventEmitter = __webpack_require__(1964);
 var Events = __webpack_require__(3389);
 var SceneEvents = __webpack_require__(204);
 
@@ -31409,21 +31424,15 @@ var File = new Class({
      * @since 3.0.0
      *
      * @param {XMLHttpRequest} xhr - The XMLHttpRequest that caused this onload event.
-     * @param {ProgressEvent} event - The DOM ProgressEvent that resulted from this load.
      */
-    onLoad: function (xhr, event)
+    onLoad: function (xhr)
     {
-        var isLocalFile = xhr.responseURL && this.loader.localSchemes.some(function (scheme)
-        {
-            return xhr.responseURL.indexOf(scheme) === 0;
-        });
-
-        var localFileOk = (isLocalFile && event.target.status === 0);
-
-        var success = !(event.target && event.target.status !== 200) || localFileOk;
+        // iOS 离线包会返回 status=0
+        var xhrStatus = xhr.status === 0 ? 200 : xhr.status;
+        var success = xhrStatus === 200;
 
         //  Handle HTTP status codes of 4xx and 5xx as errors, even if xhr.onerror was not called.
-        if (xhr.readyState === 4 && xhr.status >= 400 && xhr.status <= 599)
+        if (xhr.readyState === 4 && xhrStatus >= 400 && xhrStatus <= 599)
         {
             success = false;
         }
